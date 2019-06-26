@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>文章列表</title>
+    <link rel="stylesheet" href="js/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/iconfont.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/jquery-1.12.4.min.js"></script>
+    <script src="./js/bootstrap/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="common_title">
+            用户信息修改
+        </div>
+        <div class="container-fluid common_con">
+            <form class="form-horizontal article_form">
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">用户名称：</label>
+                    <div class="col-sm-4">
+                        <input type="text" name="username" class="form-control username" value="李思思">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">昵称：</label>
+                    <div class="col-sm-4">
+                        <input type="text" name="nickname" class="form-control nickname" value="思思">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">邮箱：</label>
+                    <div class="col-sm-4">
+                        <input type="text" name="email" class="form-control email" value="lisisi@126.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
+                    <div class="col-sm-10">
+                        <img src="images/2.jpg" alt="" class="user_pic">
+                        <input type="file" style="display: none" name="user_pic" id="exampleInputFile">
+                        <br>
+                        <label for="exampleInputFile">
+                            <img src="./images//uploadFileIcon.png" alt="">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
+                    <div class="col-sm-4">
+                        <input type="password" name="password" class="form-control password" value="12345678">
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-success btn-modifiy">修改</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+                </div>
+                <div class="modal-body">
+                    修改成功!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            /*
+        步骤:
+        进到个人中心,发送ajax请求,获取到个人信息.
+        把个人信息显示在对应的标签中.
+        */
+            $.ajax({
+                type: 'get',
+                url: 'http://localhost:8000/admin/userinfo_get',
+                success: function (canshu) {
+                    for (var key in canshu.data) {
+                        $('input.' + key).val(canshu.data[key])
+                    }
+                    $('img.user_pic').attr('src', canshu.data.user_pic)
+                }
+            })
+            //图片预览
+            //给图片预览 一个交换事件
+            $('#exampleInputFile').on('change', function () {
+                //获取这个选中的文件
+                var icon = this.files[0]
+                //生成一个url地址
+                var url = URL.createObjectURL(icon)
+                //把路径设置成img的src
+                $(this).prev().attr('src', url)
+            })
+
+            //点击修改按钮发送ajax请求
+            $('.btn-modifiy').on('click', function (e) {
+                //清除默认跳转事件
+                e.preventDefault()
+                //创建一个FormData对象
+                var num = new FormData($('form')[0])
+                //发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8000/admin/userinfo_edit',
+                    data: num,
+                    contentType: false,
+                    processData: false,
+                    success: function (canshu) {
+                        console.log(canshu);
+
+                        //请求成功的时候修改用户信息
+                        if (canshu.code == 200) {
+                            parent.window.location.reload()
+                            parent.$('.user_info img').attr('src', canshu.data.user_pic)
+                            parent.$('.user_info span').html('欢迎&nbsp;&nbsp; ' + canshu.data.nickname)
+                            parent.$('.user_center_link img').attr('src', canshu.data.user_pic)
+                        }
+                    }
+                })
+            })
+        })
+
+    </script>
+
+</body>
+
+</html>
