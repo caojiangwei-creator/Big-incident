@@ -123,7 +123,7 @@
                    success:function(canshu){
                        if(canshu.code == 200){
                            $('.user_info img').attr('src',canshu.data.user_pic)
-                           $('.user_info span').html('欢迎&nbsp;&nbsp; ' + canshu.data.nickname)
+                        //    $('.user_info span').html('欢迎'+'&nbsp;&nbsp;' + canshu.data.nickname)
                            $('.user_center_link img').attr('src',canshu.data.user_pic)
                        }
                    }

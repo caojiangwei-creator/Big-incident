@@ -40,7 +40,7 @@
                     </form>
                 </div>
                 <div class="col-xs-6">
-                    <a href="article_release.html" class="btn btn-success btn-sm pull-right" id="release_btn">发表文章</a>
+                    <a href="./文章新增.html" class="btn btn-success btn-sm pull-right" id="release_btn">发表文章</a>
                 </div>
             </div>
 
@@ -287,8 +287,8 @@
                 <td class="text-center">{{$value.date}}</td>
                 <td class="text-center">{{$value.state}}</td>
                 <td class="text-center">
-                    <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
-                    <a href="javascript:deleteTr( 1005 );" class="btn btn-danger btn-xs">删除</a>
+                    <a href="./文章编辑.html?id={{$value.id}}" class="btn btn-default btn-xs bianji">编辑</a>
+                    <a href="#" data-id={{$value.id}} class="btn btn-danger btn-xs btn-delete">删除</a>
                 </td>
             </tr>
         {{/each}}
@@ -350,14 +350,13 @@
                     if (canshu.code == 200) {
                         var num = template('tmp', canshu)
                         $('tbody').html(num)
-                        var totalPages = canshu.totalPage;
+                        var totalPages = canshu.totalPage; 
                         if (mypages != totalPages) {
                             mypages = totalPages
-                            var totalPages = canshu.totalPage;
-                            var currentPage = $pagination.twbsPagination('getCurrentPage');
+                            window.currentPage = $pagination.twbsPagination('getCurrentPage');
                             $pagination.twbsPagination('destroy');
                             $pagination.twbsPagination($.extend({}, defaultOpts, {
-                                startPage: currentPage,
+                                startPage: 1,//currentPage代表当前页
                                 totalPages: totalPages
                             }));
                         }
@@ -375,11 +374,34 @@
         $('#btnSearch').trigger('click')
 
 
-
+        //给页面上的删除按钮委托注册一个点击事件
+        $('tbody').on('click','.btn-delete',function(e){
+            //清除跳转事件
+            e.preventDefault();
+            //获取当前删除的这个元素的id
+            var id = $(this).attr('data-id')
+            console.log(id);
+            //发送ajax请求
+            $.ajax({
+                url:'http://localhost:8000/admin/article_delete',
+                data:{
+                    id:id,
+                },
+                success:function(canshu){
+                    // console.log(canshu);
+                    if(confirm('确定要删除吗?')){
+                        if(canshu.code == 200){
+                            //重新渲染页面
+                            person(currentPage)
+                        }
+                    }
+                    
+                }
+            })
+        })
 
         //页码插件.单击页码会执行的事件
-
-
+        
 
     </script>
 

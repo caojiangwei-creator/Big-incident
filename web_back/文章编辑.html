@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>文章编辑</title>
+    <link rel="stylesheet" href="js/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/iconfont.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link type="text/css" rel="stylesheet" href="js/jedate/css/jedate.css">
+
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="common_title">
+            文章编辑
+        </div>
+        <div class="container-fluid common_con">
+            <form class="form-horizontal article_form">
+                <div class="form-group">
+                    <label for="" class="col-sm-2 control-label">文章标题：</label>
+                    <div class="col-sm-10">
+                        <input type="email" name='title' class="form-control item_title" id="inputEmail3" value="文章标题文字">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputPassword3" class="col-sm-2 control-label">文章封面：</label>
+                    <div class="col-sm-10">
+                        <img src="images/pic06.jpg" class="article_cover">
+                        <input type="file" name="cover" id="exampleInputFile">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="" class="col-sm-2 control-label">文章类别：</label>
+                    <div class="col-sm-4">
+                        <select class="form-control sel_option" name="type">
+                            <option>类别一</option>
+                            <option>类别二</option>
+                            <option>类别三</option>
+                            <option selected>类别四</option>
+                            <option>类别五</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">发布时间：</label>
+                    <div class="col-sm-4">
+
+                        <div class="input-group">
+                            <input type="text" name="date" class="form-control text_date" value="2019-05-17" id="">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button"
+                                    onclick="jeDate('#dateinput',{trigger:false,format: 'YYYY-MM-DD'})"><i
+                                        class="iconfont icon-icondate"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
+                    <div class="col-sm-10">
+                        <input type="text" name="content" class="form-control" id="rich_content" name="content"
+                            placeholder="文章内容" value="文章内容">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button type="submit" class="btn btn-success">修改</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="js/jquery-1.12.4.min.js"></script>
+    <script src="js/jedate/js/jedate.js"></script>
+    <script src="js/tinymce/js/tinymce/tinymce.min.js"></script>
+    <script src="js/tinymce/js/tinymce_setup.js"></script>
+    <script src="./js/template-web.js"></script>
+    <script id="moban" type="text/html">
+        {{each data v}}
+        <option value="{{v.id}}">{{v.name}}</option>
+        {{/each}}
+    </script>
+    <script>
+        $(function () {
+            //一进到文章编辑页面就加载所有的文章类别
+
+            $.ajax({
+                url: 'http://localhost:8000/admin/category_search',
+                success: function (canshu) {
+                    console.log(canshu);
+                    var setHtml = template('moban', canshu)
+                    $('.form-control').html(setHtml)
+                }
+            })
+            //给切换图片一个改变事件
+            $('#exampleInputFile').on('change', function () {
+                var icon = this.files[0];
+                console.log(icon);
+
+                var url = URL.createObjectURL(icon)
+                $(this).prev().attr('src', url)
+            })
+
+            var id = window.location.search.split('=')[1]
+            console.log(id);
+            $.ajax({
+                url: 'http://localhost:8000/admin/search',
+                data: {
+                    id: id,
+                },
+                success: function (canshu) {
+                    console.log(canshu);
+                    if (canshu.code == 200) {
+                        console.log(canshu);
+                        
+                        $('input.item_title').val(canshu.data.title);
+                        $('img.article_cover').attr('src', canshu.data.cover);
+                        $('select.sel_option').val(canshu.data.type);
+                        $('input.text_date').val(canshu.data.date);
+                        $('#rich_content').val(canshu.data.content)
+                    }
+                }
+            })
+
+            //给修改按钮注册一个点击事件
+            $('.btn-success').on('click',function(e){
+                //阻止默认跳转事件
+                e.preventDefault()
+                //创建一个FormData对象
+                var formdata = new FormData($('form')[0])
+                //把要编辑的内容id也添加到formdata里面
+                formdata.append('id',id)
+                //把编译器里面的内容调价到formdata对象里面
+                formdata.append('content', tinyMCE.activeEditor.getContent())
+                
+                //发送ajax请求
+                $.ajax({
+                    type:'post',
+                    url:'http://localhost:8000/admin/article_edit',
+                    contentType:false,
+                    processData:false,
+                    data:formdata,
+                    success:function(canshu){
+                        if(canshu.code == 200){
+                            alert('修改成功')
+                        }
+                    }
+                })
+            })
+
+        })
+    </script>
+</body>
+
+</html>
